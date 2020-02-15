@@ -150,6 +150,7 @@ function spawnCarServerLoaded(player)
         local modelid = math.tointeger(result["modelid"])
         local fuel = math.tointeger(result["fuel"])
         local color = tostring(result["color"])
+		local plate = tostring(result["plate"])
         local inventory = json_decode(result["inventory"])
         local name = _("vehicle_"..modelid)
 
@@ -173,9 +174,10 @@ function spawnCarServerLoaded(player)
                     end
                 end
                 if isSpawnable then
-                    local vehicle = CreateVehicle(modelid, v.spawn[1], v.spawn[2], v.spawn[3], v.spawn[4])
+                    local vehicle = CreateVehicle(modelid, v.spawn[1], v.spawn[2], v.spawn[3], v.spawn[4])					
                     SetVehicleRespawnParams(vehicle, false)
-                    SetVehicleColor(vehicle, "0x"..color)
+					SetVehicleLicensePlate(vehicle, plate)
+                    SetVehicleColor(vehicle, "0x"..color)					
                     SetVehiclePropertyValue(vehicle, "locked", true, true)
                     SetVehiclePropertyValue(vehicle, "fuel", true, fuel)
                     CreateVehicleData(player, vehicle, modelid, fuel)

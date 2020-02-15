@@ -92,12 +92,13 @@ function GetCarDealearByObject(cardealerobject)
 	return nil
 end
 
-function CreateVehicleDatabase(player, vehicle, modelid, color, price)
-    local query = mariadb_prepare(sql, "INSERT INTO player_garage (id, ownerid, modelid, color, garage, price) VALUES (NULL, '?', '?', '?', '0', '?');",
+function CreateVehicleDatabase(player, vehicle, modelid, color, price, plate)
+    local query = mariadb_prepare(sql, "INSERT INTO player_garage (id, ownerid, modelid, color, garage, price, plate) VALUES (NULL, '?', '?', '?', '0', '?', '?');",
         tostring(PlayerData[player].accountid),
         tostring(modelid),
         tostring(color),
-        tostring(price)
+        tostring(price),
+		tostring(plate)
     )
 
     mariadb_async_query(sql, query, onVehicleCreateDatabase, vehicle)
@@ -133,11 +134,13 @@ function buyCarServer(player, modelid, color, cardealerobject)
                 end
                 if isSpawnable then
                     local vehicle = CreateVehicle(modelid, v.spawn[1], v.spawn[2], v.spawn[3], v.spawn[4])
+					local plate = CreateVehiclePlate()					
                     SetVehicleRespawnParams(vehicle, false)
+					SetVehicleLicensePlate(vehicle, plate)
                     SetVehicleColor(vehicle, "0x"..color)
                     SetVehiclePropertyValue(vehicle, "locked", true, true)
                     CreateVehicleData(player, vehicle, modelid)
-                    CreateVehicleDatabase(player, vehicle, modelid, color, price)
+                    CreateVehicleDatabase(player, vehicle, modelid, color, price, plate)
                     RemovePlayerCash(player, price)
                     CallRemoteEvent(player, "closeCarDealer")
                     return CallRemoteEvent(player, "MakeSuccessNotification", _("car_buy_sucess", name, price, _("currency")))
@@ -149,3 +152,46 @@ function buyCarServer(player, modelid, color, cardealerobject)
     end
 end
 AddRemoteEvent("buyCarServer", buyCarServer)
+
+function CreateVehiclePlate()
+	local testPlate = 0
+	local plate = ""
+
+	while(testPlate == 0)
+	do
+		plate = doText(3).."-"..doNumbers(4)
+		
+		local query = mariadb_prepare(sql, "SELECT plate from player_garage WHERE plate = '?';",
+			tostring(plate)
+		)
+
+		local result = mariadb_await_query(sql, query)
+
+		if mariadb_get_row_count() == 0 then
+			testPlate = 1
+		end
+
+		mariadb_delete_result(result)
+	end
+	
+	return plate	
+    
+end
+
+function doText(numLetters)
+    local totTxt = ""
+    for i = 1,numLetters do
+        totTxt = totTxt..string.char(math.random(65,90))
+    end
+    return totTxt
+end
+--doText(12) -- Prints a string of a random 12 letters, this number can be changed; this is one of my outputs with 12: 'avbaajquwzgj'
+--If you're curious, 65 to 90 happens to be the alphabet capitalized, while 97 to 122 is lowercase.
+
+function doNumbers(numLetters)
+    local totTxt = ""
+    for i = 1,numLetters do
+        totTxt = totTxt..math.random(0,9)
+    end
+    return totTxt
+end

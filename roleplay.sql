@@ -196,10 +196,12 @@ CREATE TABLE IF NOT EXISTS `player_garage` (
   `price` int(11) NOT NULL,
   `fuel` int(11) NOT NULL DEFAULT 100,
   `inventory` text DEFAULT NULL,
+  `plate` varchar(11) NOT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `plate` (`plate`),
   KEY `player_vehicle_ibfk_1` (`ownerid`),
   CONSTRAINT `player_garage_ibfk_1` FOREIGN KEY (`ownerid`) REFERENCES `accounts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 -- Listage de la structure de la table roleplay. player_house
 CREATE TABLE IF NOT EXISTS `player_house` (
