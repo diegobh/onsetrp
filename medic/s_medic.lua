@@ -16,7 +16,7 @@ local VEHICLE_SPAWN_LOCATION = {
 }
 
 local MEDIC_SERVICE_NPC = {
-    {x = 211596, y = 159679, z = 1320, h = 90},
+    {x = 212493, y = 157096, z = 2780, h = 180},
 }
 
 local MEDIC_VEHICLE_NPC = {
@@ -28,11 +28,11 @@ local MEDIC_GARAGE = {
 }
 
 local MEDIC_EQUIPMENT_NPC = {
-    {x = 211252, y = 158777, z = 1322, h = 90},
+    {x = 212744, y = 157405, z = 2781, h = -90},
 }
 
 local MEDIC_HOSPITAL_LOCATION = {
-    {x = 213079, y = 155179, radius = 8000}
+    {x = 213079, y = 155179, radius = 2000}
 }
 
 local MEDIC_EQUIPEMENT_NEEDED = {
@@ -53,7 +53,7 @@ local medicGarageIds = {}
 local medicEquipmentNpcIds = {}
 local medicHospitalLocationIds = {}
 
-local callOuts = {}
+
 
 AddEvent("OnPackageStart", function()
     for k, v in pairs(MEDIC_SERVICE_NPC) do
@@ -371,8 +371,7 @@ function MedicRevivePlayer(player)-- To revive a player. can fail. need defib.
             end)
             
             CallRemoteEvent(nearestPlayer, "medic:revivescreen:toggle", false)
-            CallRemoteEvent(player, "MakeNotification", _("medic_revived_success"), "linear-gradient(to right, #00b09b, #96c93d)")
-            if callOuts[nearestPlayer] and callOuts[nearestPlayer].taken == true then MedicCalloutEnd(player, nearestPlayer) end
+            CallRemoteEvent(player, "MakeNotification", _("medic_revived_success"), "linear-gradient(to right, #00b09b, #96c93d)")            
             return
         else -- Failure !
             CallRemoteEvent(player, "MakeErrorNotification", _("medic_revived_failure"))
@@ -442,13 +441,22 @@ AddEvent("OnPlayerDeath", function(player, instigator)-- do some stuff when play
     if GetMedicsOnDuty(player) > 0 then
         if AUTO_CALL_FOR_MEDIC == true then CreateMedicCallout(player) end
         
-        CallRemoteEvent(player, "medic:revivescreen:btncallmedic:toggle", 1)
+         CallRemoteEvent(player, "medic:revivescreen:btncallmedic:toggle", 1)
     else
         CallRemoteEvent(player, "medic:revivescreen:btncallmedic:toggle", 0)
     end
     
     SetPlayerBusy(player)
     PlayerData[player].has_been_revived = false
+end)
+
+function CreateMedicCallout(player)
+    CreateCallout(player, "medic", "Coma")
+end
+AddRemoteEvent("medic:callout:create", CreateMedicCallout)
+
+AddCommand("suicide", function(player)
+    SetPlayerHealth(player, 0)    
 end)
 
 AddRemoteEvent("medic:giveup", function(player)
@@ -464,89 +472,7 @@ end)
 
 
 --------- HEALTH BEHAVIOR END
---------- CALLOUTS
-AddCommand("clearcallouts", function(player)
-    if PlayerData[player].admin ~= 1 then return end
-    callOuts = {}
-    print('CALLOUTS → Cleared')
-end)
 
-function CreateMedicCallout(player)-- create a new callout
-    if GetMedicsOnDuty(player) < 1 then
-        CallRemoteEvent(player, "MakeErrorNotification", _("medic_no_medic"))
-        return
-    end
-    if GetPlayerHealth(player) > 50 then return end -- To not bother medics with trolls
-    local x, y, z = GetPlayerLocation(player)
-    if callOuts[player] ~= nil and callOuts[player].taken == true then return end
-    callOuts[player] = {location = {x = x, y = y, z = z}, taken = false}
-    MedicCalloutSend(player)
-    CallRemoteEvent(player, "MakeNotification", _("medic_callout_created"), "linear-gradient(to right, #00b09b, #96c93d)", 10000)
-end
-AddRemoteEvent("medic:callout:create", CreateMedicCallout)
-
-function MedicCalloutSend(player)-- send the new callout to medics
-    for k, v in pairs(GetAllPlayers()) do
-        if PlayerData[v].job == "medic" then
-            CallRemoteEvent(v, "MakeNotification", _("medic_someone_is_in_trouble"), "linear-gradient(to right, #00b09b, #96c93d)", 10000)
-            CallRemoteEvent(v, "medic:deathalarm")            
-        end
-    end
-end
-
-function MedicCalloutTake(player, target)-- allow a medic to take the callout
-    if PlayerData[player].medic ~= 1 then return end
-    if PlayerData[player].job ~= "medic" then return end
-    if callOuts[tonumber(target)] == nil then return end
-    for k,v in pairs(callOuts) do
-        if v.taken == player then
-            CallRemoteEvent(player, "MakeErrorNotification", _("medic_already_have_callout"))
-            return
-        end
-    end
-    if callOuts[tonumber(target)].taken ~= false then
-        CallRemoteEvent(player, "MakeErrorNotification", _("medic_callout_taken"))
-        return
-    end
-    callOuts[tonumber(target)].taken = player
-    local x, y, z = GetPlayerLocation(tonumber(target))
-    CallRemoteEvent(player, "medic:callout:createwp", tonumber(target), x, y, z)
-    CallRemoteEvent(player, "MakeNotification", _("medic_you_took_callout"), "linear-gradient(to right, #00b09b, #96c93d)")
-    CallRemoteEvent(tonumber(target), "MakeNotification", _("medic_callout_medic_is_coming"), "linear-gradient(to right, #00b09b, #96c93d)", 10000)
-end
-AddRemoteEvent("medic:callout:start", MedicCalloutTake)
-
-function MedicCalloutEnd(player, target)-- allow a medic to end a callout
-    if PlayerData[player].medic ~= 1 then return end
-    if PlayerData[player].job ~= "medic" then return end
-    if callOuts[tonumber(target)] == nil then return end
-    if callOuts[tonumber(target)].taken ~= player then return end
-    callOuts[tonumber(target)] = nil
-    CallRemoteEvent(player, "medic:callout:clean", tonumber(target))
-    CallRemoteEvent(player, "MakeNotification", _("medic_ended_callout"), "linear-gradient(to right, #00b09b, #96c93d)")
-end
-AddRemoteEvent("medic:callout:end", MedicCalloutEnd)
-
-AddRemoteEvent("medic:callout:getlist", function(player)
-    if PlayerData[player].medic ~= 1 then return end
-    if PlayerData[player].job ~= "medic" then return end
-
-    local x,y,z = GetPlayerLocation(player)
-    
-    local calloutsList = {}
-    for k,v in pairs(callOuts) do
-        local x2,y2,z2 = GetPlayerLocation(k)
-        local dist = math.floor(tonumber(GetDistance2D(x, y, x2, y2)) / 100)
-        calloutsList[k] = "["..k.."] "..tostring(dist).." m"
-        if v.taken ~= false then            
-            calloutsList[k] = calloutsList[k].."   ".._("medic_callout_taken_menu", PlayerData[player].name)
-        end
-    end
-
-    CallRemoteEvent(player, "medic:client:showcallouts", calloutsList)    
-end)
-
---------- CALLOUTS END
 --------- ITEMS USES
 function MedicUseItem(player, item)
     if item == "health_kit" then -- PERSONNAL HEALTH KIT (Dont need to be medic)
@@ -664,3 +590,10 @@ function IsHospitalInRange(player)-- to nknow if player and targets are in range
     end
     return false
 end
+
+
+AddCommand("medtest", function(player)
+    if PlayerData[player].admin ~= 1 then return end
+    local veh = GetPlayerVehicle(player)    
+    SetVehicleTrunkRatio(veh, 90)
+end)

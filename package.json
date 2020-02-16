@@ -34,14 +34,15 @@
         "burdigalax/server/inventory.lua",
         "robbery/server.lua",
         "salary/server.lua",
-        "vehicle_radio/server.lua",
+        "vehicle_radio/s_vehicleradio.lua",
         "hud/pinmap/server/main.lua",
         "vehicle/ragP/server.lua",
         "vehicle/ragP/settings.lua",
         "animation/pickndrop_s.lua",
         "medic/s_medic.lua",
         "medic/s_damage.lua",
-        "admin/s_spectate.lua"
+        "admin/s_spectate.lua",
+        "callouts/s_callouts.lua"
     ],
     "client_scripts": [
         "welcome/client.lua",
@@ -79,7 +80,7 @@
         "licenses/client.lua",
         "burdigalax/client/inventory.lua",
         "burdigalax/client/gasStation.lua",
-        "vehicle_radio/client.lua",
+        "vehicle_radio/c_vehicleradio.lua",
         "robbery/client.lua",
         "hud/pinmap/client/main.lua",
         "vehicle/ragP/client.lua",
@@ -88,7 +89,8 @@
         "medic/c_medic.lua",
         "medic/c_damage.lua",
         "chat/client.lua",
-        "admin/c_spectate.lua"
+        "admin/c_spectate.lua",
+        "callouts/c_callouts.lua"
     ],
     "files": [
         "hud/speaking/speaking.png",
@@ -229,6 +231,9 @@
         "welcome/index.js",
         "welcome/logo.png",
         "welcome/background.png",
-        "welcome/image.png"
+        "welcome/image.png",
+        "callouts/ui/index.html",
+        "callouts/ui/main.js",
+        "callouts/ui/main.css"
     ]
 }
