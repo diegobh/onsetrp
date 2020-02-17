@@ -47,7 +47,7 @@ AddRemoteEvent("callouts:create", CreateCallout)
 
 function CalloutsNotifyPlayers(callout)-- send the new callout to medics and policemens
     for k, v in pairs(GetAllPlayers()) do
-        if callout.job == PlayerData[v].job then
+        if PlayerData[v] ~= nil and PlayerData[v].job ~= nil and PlayerData[v].job ~= "" and callout.job == PlayerData[v].job then
             if callout.job == "medic" then
                 CallRemoteEvent(v, "MakeNotification", _("medic_new_callout", callout.label), "linear-gradient(to right, #00b09b, #96c93d)", 10000)
                 CallRemoteEvent(v, "medic:deathalarm")         
@@ -120,7 +120,7 @@ function UpdateCalloutsList(player, job)
     local job = job or PlayerData[player].job
     
     for k, v in pairs(GetAllPlayers()) do
-        if job == PlayerData[v].job then
+        if PlayerData[v] ~= nil and PlayerData[v].job ~= nil and PlayerData[v].job ~= "" and job == PlayerData[v].job then
             local calloutsList = GetCalloutsList(v)
             CallRemoteEvent(v, "callouts:updatelist", calloutsList)  
         end
@@ -136,27 +136,29 @@ function GetCalloutsList(player)
 
     for k,v in pairs(callOuts) do
         if v.job == PlayerData[player].job then
-            local x2,y2,z2 = GetPlayerLocation(k)
-            local dist = math.floor(tonumber(GetDistance2D(x, y, x2, y2)) / 100)
+            if IsValidPlayer(k) then
+                local x2,y2,z2 = GetPlayerLocation(k)
+                local dist = math.floor(tonumber(GetDistance2D(x, y, x2, y2)) / 100)
 
-            local taken = v.taken
+                local taken = v.taken
 
-            if v.taken then
-                if taken == player then
-                    taken = 'me'
-                else
-                    taken = PlayerData[taken].name
+                if v.taken then
+                    if taken == player then
+                        taken = 'me'
+                    else
+                        taken = PlayerData[taken].name
+                    end
                 end
-            end
 
-            table.insert(calloutsList, {
-                id = k,
-                from = PlayerData[k].name,
-                job = v.caller_job,
-                reason = v.label,
-                distance = dist,
-                taken = taken
-            })
+                table.insert(calloutsList, {
+                    id = k,
+                    from = PlayerData[k].name,
+                    job = v.caller_job,
+                    reason = v.label,
+                    distance = dist,
+                    taken = taken
+                })
+            end
         end
     end
 

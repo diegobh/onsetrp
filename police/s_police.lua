@@ -483,11 +483,13 @@ function GetNearestPlayer(player, maxDist)
     local dist
     for k, v in pairs(GetStreamedPlayersForPlayer(player)) do
         if v ~= player then
-            local x2, y2, z2 = GetPlayerLocation(v)
-            local currentDist = GetDistance3D(x, y, z, x2, y2, z2)
-            if (dist == nil or currentDist < dist) and currentDist <= tonumber(maxDist) then
-                closestPlayer = v
-                dist = currentDist
+            if IsValidPlayer(v) then
+                local x2, y2, z2 = GetPlayerLocation(v)
+                local currentDist = GetDistance3D(x, y, z, x2, y2, z2)
+                if (dist == nil or currentDist < dist) and currentDist <= tonumber(maxDist) then
+                    closestPlayer = v
+                    dist = currentDist
+                end
             end
         end
     end
@@ -500,10 +502,12 @@ function GetNearestPlayers(player, maxDist)
     local closestPlayers = {}
     for k, v in pairs(GetStreamedPlayersForPlayer(player)) do
         if k ~= player then
-            local x2, y2, z2 = GetPlayerLocation(k)
-            local currentDist = GetDistance3D(x, y, z, x2, y2, z2)
-            if currentDist < maxDist then
-                table.insert(closestPlayers, k)
+            if IsValidPlayer(k) then            
+                local x2, y2, z2 = GetPlayerLocation(k)
+                local currentDist = GetDistance3D(x, y, z, x2, y2, z2)
+                if currentDist < maxDist then
+                    table.insert(closestPlayers, k)
+                end
             end
         end
     end
