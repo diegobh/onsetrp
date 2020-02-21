@@ -305,10 +305,6 @@ AddRemoteEvent("TransferInventory", function(player, originInventory, item, amou
         originInventory = string.gsub(originInventory, 'vehicle_', '')
         originX, originY, originZ = GetVehicleLocation(originInventory)
     else
-        if player ~= originInventory and PlayerData[originInventory].is_cuffed == 0 then
-            return false
-        end
-
         originType = 'player'
         originX, originY, originZ = GetPlayerLocation(originInventory)
     end
@@ -330,15 +326,19 @@ AddRemoteEvent("TransferInventory", function(player, originInventory, item, amou
 
     destinationInventory = tonumber(destinationInventory)
 
+    if originType == 'player' and destinationType == 'player' and player ~= originInventory and PlayerData[originInventory].is_cuffed == 0 then
+        return false
+    end
+
     local dist = GetDistance3D(originX, originY, originZ, destX, destY, destZ)
     
-    if dist <= 200 then
+    if dist <= 500 then
         local enoughItems = false
 
         if originType == 'player' then
-            enoughItems = PlayerData[originInventory].inventory[item] >= amount
+            enoughItems = PlayerData[originInventory].inventory[item] == nil or PlayerData[originInventory].inventory[item] >= amount
         else
-            enoughItems = VehicleData[originInventory].inventory[item] >= amount
+            enoughItems = VehicleData[originInventory].inventory[item] == nil or VehicleData[originInventory].inventory[item] >= amount
         end
 
         if not enoughItems then
@@ -423,7 +423,7 @@ AddRemoteEvent("RemoveFromInventory", function(player, originInventory, item, am
 
     originInventory = tonumber(originInventory)
 
-    if PlayerData[originInventory].inventory[item] < tonumber(amount) then
+    if PlayerData[originInventory] == nil or PlayerData[originInventory].inventory[item] == nil or PlayerData[originInventory].inventory[item] < tonumber(amount) then
         CallRemoteEvent(player, "MakeErrorNotification", _("not_enough_item"))
     else
         RemoveInventory(tonumber(originInventory), item, tonumber(amount), 1)
