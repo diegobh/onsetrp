@@ -79,7 +79,6 @@ function CalloutTake(player, target)-- allow  to take the callout
 
     callOuts[tonumber(target)].taken = player
 
-    local x, y, z = GetPlayerLocation(tonumber(target))
     local label
 
     if PlayerData[player].job == "medic" then
@@ -92,7 +91,7 @@ function CalloutTake(player, target)-- allow  to take the callout
 
     UpdateCalloutsList(player)
 
-    CallRemoteEvent(player, "callouts:createwp", tonumber(target), x, y, z, label)
+    CallRemoteEvent(player, "callouts:createwp", tonumber(target), callOuts[tonumber(target)].location.x, callOuts[tonumber(target)].location.y, callOuts[tonumber(target)].location.z, label)
     CallRemoteEvent(player, "MakeNotification", _("callouts_you_took_callout"), "linear-gradient(to right, #00b09b, #96c93d)")
     CallRemoteEvent(tonumber(target), "MakeNotification", _("callout_has_been_taken"), "linear-gradient(to right, #00b09b, #96c93d)", 10000)
 end
@@ -137,8 +136,7 @@ function GetCalloutsList(player)
     for k,v in pairs(callOuts) do
         if v.job == PlayerData[player].job then
             if IsValidPlayer(k) then
-                local x2,y2,z2 = GetPlayerLocation(k)
-                local dist = math.floor(tonumber(GetDistance2D(x, y, x2, y2)) / 100)
+                local dist = math.floor(tonumber(GetDistance2D(x, y, v.location.x, v.location.y)) / 100)
 
                 local taken = v.taken
 

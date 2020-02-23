@@ -56,7 +56,6 @@ end)
         for i,j in pairs(v.location) do
             v.object[i] = CreatePickup(v.modelid , v.location[i][1], v.location[i][2], v.location[i][3])
 
-
             table.insert(GarageStoreObjectsCached, v.object[i])
         end
 	end
@@ -120,13 +119,7 @@ function OnPlayerPickupHit(player, pickup)
                 seat = GetPlayerVehicleSeat(player)
                 if (vehicle ~= 0 and seat == 1) then
                     if (VehicleData[vehicle].owner == PlayerData[player].accountid) then
-                        local query = mariadb_prepare(sql, "UPDATE `player_garage` SET `garage`=1 WHERE `id` = ?;",
-                        tostring(VehicleData[vehicle].garageid)
-                        )
-                        mariadb_async_query(sql, query)
-                        DestroyVehicle(vehicle)
-                        DestroyVehicleData(vehicle)
-                        return CallRemoteEvent(player, "MakeNotification", _("vehicle_stored"), "linear-gradient(to right, #00b09b, #96c93d)")
+                        MoveVehicleToGarage(vehicle, player)
                     end
                 end
             end
@@ -135,8 +128,19 @@ function OnPlayerPickupHit(player, pickup)
 end
 AddEvent("OnPlayerPickupHit", OnPlayerPickupHit)
 
+function MoveVehicleToGarage(vehicle, player)
+    if vehicle then
+        if VehicleData[vehicle].garageid ~= 0 then
+            mariadb_async_query(sql, mariadb_prepare(sql, "UPDATE `player_garage` SET `garage`=1 WHERE `id` = ?;", tostring(VehicleData[vehicle].garageid)))
+        end
+        DestroyVehicle(vehicle)
+        DestroyVehicleData(vehicle)
+        return CallRemoteEvent(player, "MakeNotification", _("vehicle_stored"), "linear-gradient(to right, #00b09b, #96c93d)")
+    end
+end
+
 function spawnCarServer(player, id)
-    local query = mariadb_prepare(sql, "SELECT * FROM player_garage WHERE id = ?;",
+    local query = mariadb_prepare(sql, "SELECT * FROM player_garage WHERE id = '?';",
     tostring(id))
     mariadb_async_query(sql, query, spawnCarServerLoaded, player)
 end
@@ -155,7 +159,7 @@ function spawnCarServerLoaded(player)
         local name = _("vehicle_"..modelid)
 
         local query = mariadb_prepare(sql, "UPDATE `player_garage` SET `garage`=0 WHERE `id` = ?;",
-        tostring(id)
+            tostring(id)
         )
 
         local x, y, z = GetPlayerLocation(player)
@@ -182,6 +186,9 @@ function spawnCarServerLoaded(player)
                     SetVehiclePropertyValue(vehicle, "fuel", true, fuel)
                     CreateVehicleData(player, vehicle, modelid, fuel)
                     VehicleData[vehicle].garageid = id
+                    if inventory == nil then
+                        inventory = {}
+                    end
                     VehicleData[vehicle].inventory = inventory
                     mariadb_async_query(sql, query)
                     CallRemoteEvent(player, "closeGarageDealer")
@@ -194,26 +201,26 @@ function spawnCarServerLoaded(player)
 	end
 end
 
-function sellCarServer(player, id)
-    local query = mariadb_prepare(sql, "SELECT * FROM player_garage WHERE id = ?;",
-    tostring(id))
+-- function sellCarServer(player, id)
+--     local query = mariadb_prepare(sql, "SELECT * FROM player_garage WHERE id = ?;",
+--     tostring(id))
 
-    mariadb_async_query(sql, query, sellCarServerLoaded, player)
-end
-AddRemoteEvent("sellCarServer", sellCarServer)
+--     mariadb_async_query(sql, query, sellCarServerLoaded, player)
+-- end
+-- AddRemoteEvent("sellCarServer", sellCarServer)
 
-function sellCarServerLoaded(player)
-    for i=1,mariadb_get_row_count() do
-        local result = mariadb_get_assoc(i)
+-- function sellCarServerLoaded(player)
+--     for i=1,mariadb_get_row_count() do
+--         local result = mariadb_get_assoc(i)
 
-        local id = math.tointeger(result["id"])
-        local modelid = math.tointeger(result["modelid"])
-        local name = _("vehicle_"..modelid)
-        local price = math.ceil(result["price"] * 0.25)
+--         local id = math.tointeger(result["id"])
+--         local modelid = math.tointeger(result["modelid"])
+--         local name = _("vehicle_"..modelid)
+--         local price = math.ceil(result["price"] * 0.25)
 
-        local query = mariadb_prepare(sql, "DELETE FROM `player_garage` WHERE `id` = ?;", tostring(id))
-        mariadb_async_query(sql, query)
-        AddPlayerCash(player, price)
-        return CallRemoteEvent(player, "MakeNotification", _("sell_vehicle_success", tostring(name), price, _("currency")), "linear-gradient(to right, #00b09b, #96c93d)")
-	end
-end
+--         local query = mariadb_prepare(sql, "DELETE FROM `player_garage` WHERE `id` = ?;", tostring(id))
+--         mariadb_async_query(sql, query)
+--         AddPlayerCash(player, price)
+--         return CallRemoteEvent(player, "MakeNotification", _("sell_vehicle_success", tostring(name), price, _("currency")), "linear-gradient(to right, #00b09b, #96c93d)")
+-- 	end
+-- end
