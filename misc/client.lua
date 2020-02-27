@@ -19,6 +19,14 @@ function OnKeyPress(key)
 			CallEvent("CheckSiting")
 		end
 	end
+	
+	if key == "2" and IsCtrlPressed() then
+		ShowMouseCursor(true)
+	end
+	
+	if key == "3" and IsCtrlPressed() then
+		ShowMouseCursor(false)
+	end
 end
 AddEvent("OnKeyPress", OnKeyPress)
 

@@ -162,7 +162,7 @@ function GivePoliceEquipmentToPlayer(player)-- To give police equipment to polic
         end
         if GetNumberOfItem(player, "weapon_21") < 1 then -- If the player doesnt have the gun we give it to him
             SetInventory(player, "weapon_21", 1)
-            SetPlayerWeapon(player, 21, 100, false, 3, true)
+            SetPlayerWeapon(player, 21, 0, false, 3, true) -- // aqui Default: 100
         end
         if GetNumberOfItem(player, "handcuffs") < NB_HANDCUFFS then -- If the player doesnt have handcuffs we give it to him
             SetInventory(player, "handcuffs", NB_HANDCUFFS)
@@ -250,6 +250,7 @@ function SpawnPoliceCar(player)
             end
         end
         local vehicle = CreateVehicle(3, spawnPoint.x, spawnPoint.y, spawnPoint.z, spawnPoint.h)
+        SetVehicleLicensePlate(vehicle, "POL-"..PlayerData[player].accountid) 
         PlayerData[player].job_vehicle = vehicle
         CreateVehicleData(player, vehicle, 3)
         SetVehicleRespawnParams(vehicle, false)

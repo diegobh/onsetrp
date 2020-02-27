@@ -3,7 +3,16 @@ local _ = function(k, ...) return ImportPackage("i18n").t(GetPackageName(), k, .
 local inventory_base_max_slots = 50
 local backpack_slot_to_add = 35
 
+local REPAIR_KIT_HEALTH = 2500
+local REPAIR_KIT_TIME = 20
+
+local JERICAN_FUEL_AMOUNT = 50
+local JERICAN_TIME = 15
+
 local droppedObjectsPickups = {}
+
+--local mag = {8,10,17,9,40,50,35,31,15,36,20,30,20,7,1} -- // aqui MUNIÇÃO
+local mag = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
 
 AddRemoteEvent("ServerPersonalMenu", function(player, inVehicle, vehiclSpeed)
     if inVehicle and GetPlayerState(player) == PS_DRIVER and vehiclSpeed > 0 then
@@ -88,7 +97,7 @@ AddRemoteEvent("EquipInventory", function(player, originInventory, itemName, amo
             for slot, v in pairs({1, 2, 3}) do
                 local slotWeapon, ammo = GetPlayerWeapon(player, slot)
                 if slotWeapon == tonumber(weapon) then
-                    UnequipWeapon(player, originInventory, itemName, slot)
+                    UnequipWeapon2(player, originInventory, itemName, slot, ammo, slotWeapon)
                     return true
                 end
             end
@@ -96,7 +105,7 @@ AddRemoteEvent("EquipInventory", function(player, originInventory, itemName, amo
             for slot, v in pairs({1, 2, 3}) do
                 local slotWeapon, ammo = GetPlayerWeapon(player, slot)
                 if slotWeapon == 1 then
-                    SetPlayerWeapon(player, tonumber(weapon), 1000, true, slot)
+                    SetPlayerWeapon(player, tonumber(weapon), ammo, true, slot) -- // aqui Default: 1000
                     CallRemoteEvent(player, "MakeSuccessNotification", _("item_equiped", slot))
                     UpdateUIInventory(player, originInventory, itemName, PlayerData[originInventory].inventory[itemName], true)
                     return true
@@ -157,6 +166,60 @@ function UnequipWeapon(player, originInventory, itemName, slot)
     UpdateUIInventory(player, originInventory, itemName, PlayerData[originInventory].inventory[itemName], false)
 end
 
+function UnequipWeapon2(player, originInventory, itemName, slot, ammo, model)
+	local ammoName = ''
+    SetPlayerWeapon(player, 1, 0, true, slot)
+    CallRemoteEvent(player, "MakeSuccessNotification", _("item_unequiped", slot))
+    UpdateUIInventory(player, originInventory, itemName, PlayerData[originInventory].inventory[itemName], false)
+	SavePlayerAccount(player)
+	
+	if ammo > 0 then
+		if model == 2 then
+			ammoName = "mag_deagle"
+		elseif model == 3 then 
+			ammoName = "mag_m1911"
+		elseif model == 4 then
+			ammoName = "mag_glock"
+		elseif model == 5 then
+			ammoName = "mag_m9"
+		elseif model == 6 or model == 7 then
+			ammoName = "mag_shotgun"
+		elseif model == 8 then
+			ammoName = "mag_mp5"
+		elseif model == 9 then
+			ammoName = "mag_mac10"
+		elseif model == 10 then
+			ammoName = "mag_ump45"
+		elseif model == 11 then
+			ammoName = "mag_m4"
+		elseif model == 12 or model == 13 then
+			ammoName = "mag_ak"
+		elseif model == 14 then
+			ammoName = "mag_g36"
+		elseif model == 15 then
+			ammoName = "mag_asval"
+		elseif model == 16 then
+			ammoName = "mag_aks"
+		elseif model == 21 then
+			ammoName = "mag_tazer"		
+		end
+	
+		local ammotoAdd = 0
+	
+			if PlayerData[originInventory].inventory[ammoName] ~= nil then
+			ammotoAdd = PlayerData[originInventory].inventory[ammoName]
+		end
+	
+		--UpdateUIInventory(player, originInventory, ammoName, ammotoAdd + ammo, false)
+		AddInventory(originInventory, ammoName, ammo, player)
+		SavePlayerAccount(player)
+		print('MUNIÇÂO NA ARMA '..ammoName..':'..' '..ammo)
+	end
+	
+	SavePlayerAccount(player)
+	
+end
+
 AddRemoteEvent("UseInventory", function(player, originInventory, itemName, amount, inVehicle, vehiclSpeed)
     if (amount <= 0) then
         return false
@@ -189,7 +252,7 @@ AddRemoteEvent("UseInventory", function(player, originInventory, itemName, amoun
             local weaponAdded = false
             for slot, v in pairs({1, 2, 3}) do
                 if GetPlayerWeapon(player, slot) == nil then
-                    SetPlayerWeapon(player, tonumber(weapon), 1000, true, slot)
+                    SetPlayerWeapon(player, tonumber(weapon), 0, true, slot) -- // aqui Default: 1000
                     CallRemoteEvent(player, "MakeSuccessNotification", _("item_equiped", slot))
                     weaponAdded = true
                 end
@@ -198,50 +261,289 @@ AddRemoteEvent("UseInventory", function(player, originInventory, itemName, amoun
                 CallRemoteEvent(player, "MakeErrorNotification", _("not_enough_slots"))
             end
         else
+			-- // aqui MUNIÇÃO
+			if itemName == "mag_deagle" then
+                local slot = GetPlayerEquippedWeaponSlot(player)
+                local model, ammo = GetPlayerWeapon(player, slot)
+                if model == 2 then
+                    SetPlayerWeapon(player, model, ammo + mag[1], true, slot)
+                    RemoveInventory(player, itemName, amount)
+                elseif model == 1 then
+                    return CallRemoteEvent(player, "MakeNotification", _("equip_weapon"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                else
+                    return CallRemoteEvent(player, "MakeNotification", _("incompatible"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                end
+            end
+
+            if itemName == "mag_m1911" then
+                local slot = GetPlayerEquippedWeaponSlot(player)
+                local model, ammo = GetPlayerWeapon(player, slot)
+                if model == 3 then
+                    SetPlayerWeapon(player, model, ammo + mag[2], true, slot)
+                    RemoveInventory(player, itemName, amount)
+                elseif model == 1 then
+                    return CallRemoteEvent(player, "MakeNotification", _("equip_weapon"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                else
+                    return CallRemoteEvent(player, "MakeNotification", _("incompatible"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                end
+            end
+
+            if itemName == "mag_glock" then
+                local slot = GetPlayerEquippedWeaponSlot(player)
+                local model, ammo = GetPlayerWeapon(player, slot)
+                if model == 4 then
+                    SetPlayerWeapon(player, model, ammo + mag[3], true, slot)
+                    RemoveInventory(player, itemName, amount)
+                elseif model == 1 then
+                    return CallRemoteEvent(player, "MakeNotification", _("equip_weapon"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                else
+                    return CallRemoteEvent(player, "MakeNotification", _("incompatible"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                end
+            end
+
+            if itemName == "mag_m9" then
+                local slot = GetPlayerEquippedWeaponSlot(player)
+                local model, ammo = GetPlayerWeapon(player, slot)
+                if model == 5 then
+                    SetPlayerWeapon(player, model, ammo + mag[4], true, slot)
+                    RemoveInventory(player, itemName, amount)
+                elseif model == 1 then
+                    return CallRemoteEvent(player, "MakeNotification", _("equip_weapon"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                else
+                    return CallRemoteEvent(player, "MakeNotification", _("incompatible"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                end
+            end
+            if itemName == "mag_shotgun" then
+                local slot = GetPlayerEquippedWeaponSlot(player)
+                local model, ammo = GetPlayerWeapon(player, slot)
+                if model == 6 or model == 7 then
+                    SetPlayerWeapon(player, model, ammo + mag[2], true, slot)
+                    RemoveInventory(player, itemName, amount)
+                elseif model == 1 then
+                    return CallRemoteEvent(player, "MakeNotification", _("equip_weapon"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                else
+                    return CallRemoteEvent(player, "MakeNotification", _("incompatible"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                end
+            end
+            if itemName == "mag_mp5" then
+                local slot = GetPlayerEquippedWeaponSlot(player)
+                local model, ammo = GetPlayerWeapon(player, slot)
+                if model == 8 then
+                    SetPlayerWeapon(player, model, ammo + mag[5], true, slot)
+                    RemoveInventory(player, itemName, amount)
+                elseif model == 1 then
+                    return CallRemoteEvent(player, "MakeNotification", _("equip_weapon"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                else
+                    return CallRemoteEvent(player, "MakeNotification", _("incompatible"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                end
+            end
+            if itemName == "mag_mac10" then
+                local slot = GetPlayerEquippedWeaponSlot(player)
+                local model, ammo = GetPlayerWeapon(player, slot)
+                if model == 9 then
+                    SetPlayerWeapon(player, model, ammo + mag[6], true, slot)
+                    RemoveInventory(player, itemName, amount)
+                elseif model == 1 then
+                    return CallRemoteEvent(player, "MakeNotification", _("equip_weapon"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                else
+                    return CallRemoteEvent(player, "MakeNotification", _("incompatible"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                end
+            end
+            if itemName == "mag_ump45" then
+                local slot = GetPlayerEquippedWeaponSlot(player)
+                local model, ammo = GetPlayerWeapon(player, slot)
+                if model == 10 then
+                    SetPlayerWeapon(player, model, ammo + mag[7], true, slot)
+                    RemoveInventory(player, itemName, amount)
+                elseif model == 1 then
+                    return CallRemoteEvent(player, "MakeNotification", _("equip_weapon"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                else
+                    return CallRemoteEvent(player, "MakeNotification", _("incompatible"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                end
+            end
+            if itemName == "mag_m4" then
+                local slot = GetPlayerEquippedWeaponSlot(player)
+                local model, ammo = GetPlayerWeapon(player, slot)
+                if model == 11 then
+                    SetPlayerWeapon(player, model, ammo + mag[8], true, slot)
+                    RemoveInventory(player, itemName, amount)
+                elseif model == 1 then
+                    return CallRemoteEvent(player, "MakeNotification", _("equip_weapon"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                else
+                    return CallRemoteEvent(player, "MakeNotification", _("incompatible"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                end
+            end
+            if itemName == "mag_ak" then
+                local slot = GetPlayerEquippedWeaponSlot(player)
+                local model, ammo = GetPlayerWeapon(player, slot)
+                if model == 12 or model == 13 then
+                    SetPlayerWeapon(player, model, ammo + mag[8], true, slot)
+                    RemoveInventory(player, itemName, amount)
+                elseif model == 1 then
+                    return CallRemoteEvent(player, "MakeNotification", _("equip_weapon"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                else
+                    return CallRemoteEvent(player, "MakeNotification", _("incompatible"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                end
+            end
+            if itemName == "mag_g36" then
+                local slot = GetPlayerEquippedWeaponSlot(player)
+                local model, ammo = GetPlayerWeapon(player, slot)
+                if model == 14 then
+                    SetPlayerWeapon(player, model, ammo + mag[8], true, slot)
+                    RemoveInventory(player, itemName, amount)
+                elseif model == 1 then
+                    return CallRemoteEvent(player, "MakeNotification", _("equip_weapon"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                else
+                    return CallRemoteEvent(player, "MakeNotification", _("incompatible"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                end
+            end
+            if itemName == "mag_asval" then
+                local slot = GetPlayerEquippedWeaponSlot(player)
+                local model, ammo = GetPlayerWeapon(player, slot)
+                if model == 15 then
+                    SetPlayerWeapon(player, model, ammo + mag[9], true, slot)
+                    RemoveInventory(player, itemName, amount)
+                elseif model == 1 then
+                    return CallRemoteEvent(player, "MakeNotification", _("equip_weapon"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                else
+                    return CallRemoteEvent(player, "MakeNotification", _("incompatible"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                end
+            end
+            if itemName == "mag_aks" then
+                local slot = GetPlayerEquippedWeaponSlot(player)
+                local model, ammo = GetPlayerWeapon(player, slot)
+                if model == 16 then
+                    SetPlayerWeapon(player, model, ammo + mag[10], true, slot)
+                    RemoveInventory(player, itemName, amount)
+                elseif model == 1 then
+                    return CallRemoteEvent(player, "MakeNotification", _("equip_weapon"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                else
+                    return CallRemoteEvent(player, "MakeNotification", _("incompatible"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                end
+            end
+            if itemName == "mag_g3" then
+                local slot = GetPlayerEquippedWeaponSlot(player)
+                local model, ammo = GetPlayerWeapon(player, slot)
+                if model == 15 then
+                    SetPlayerWeapon(player, model, ammo + mag[11], true, slot)
+                    RemoveInventory(player, itemName, amount)
+                elseif model == 1 then
+                    return CallRemoteEvent(player, "MakeNotification", _("equip_weapon"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                else
+                    return CallRemoteEvent(player, "MakeNotification", _("incompatible"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                end
+            end
+            if itemName == "mag_acr" then
+                local slot = GetPlayerEquippedWeaponSlot(player)
+                local model, ammo = GetPlayerWeapon(player, slot)
+                if model == 15 then
+                    SetPlayerWeapon(player, model, ammo + mag[12], true, slot)
+                    RemoveInventory(player, itemName, amount)
+                elseif model == 1 then
+                    return CallRemoteEvent(player, "MakeNotification", _("equip_weapon"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                else
+                    return CallRemoteEvent(player, "MakeNotification", _("incompatible"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                end
+            end
+            if itemName == "mag_hk" then
+                local slot = GetPlayerEquippedWeaponSlot(player)
+                local model, ammo = GetPlayerWeapon(player, slot)
+                if model == 15 then
+                    SetPlayerWeapon(player, model, ammo + mag[13], true, slot)
+                    RemoveInventory(player, itemName, amount)
+                elseif model == 1 then
+                    return CallRemoteEvent(player, "MakeNotification", _("equip_weapon"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                else
+                    return CallRemoteEvent(player, "MakeNotification", _("incompatible"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                end
+            end
+            if itemName == "mag_l96" then
+                local slot = GetPlayerEquippedWeaponSlot(player)
+                local model, ammo = GetPlayerWeapon(player, slot)
+                if model == 15 then
+                    SetPlayerWeapon(player, model, ammo + mag[14], true, slot)
+                    RemoveInventory(player, itemName, amount)
+                elseif model == 1 then
+                    return CallRemoteEvent(player, "MakeNotification", _("equip_weapon"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                else
+                    return CallRemoteEvent(player, "MakeNotification", _("incompatible"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                end
+            end
+            if itemName == "mag_tazer" then
+                local slot = GetPlayerEquippedWeaponSlot(player)
+                local model, ammo = GetPlayerWeapon(player, slot)
+                if model == 21 then
+                    SetPlayerWeapon(player, model, ammo + mag[15], true, slot)
+                    RemoveInventory(player, itemName, amount)
+                elseif model == 1 then
+                    return CallRemoteEvent(player, "MakeNotification", _("equip_weapon"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                else
+                    return CallRemoteEvent(player, "MakeNotification", _("incompatible"), "linear-gradient(to right, #ff5f6d, #ffc371)")
+                end
+            end
+			-- // aqui MUNMIÇÃO END
+			
             if itemName == "donut" or itemName == "apple" or itemName == "peach" or itemName == "water_bottle" or itemName == "fish" then
-                UseItem(player, originInventory, item, amount)
+                UseItem(player, originInventory, item, amount, itemName)
             end
             if itemName == "repair_kit" then
+                if GetPlayerVehicle(player) ~= 0 then
+                    CallRemoteEvent(player, "MakeErrorNotification", _("cant_while_driving"))
+                    return
+                end                
                 local nearestCar = GetNearestCar(player)
+                if not IsValidVehicle(nearestCar) then return end                
                 if nearestCar ~= 0 then
-                    if GetVehicleHealth(nearestCar) > 4000 then
+                    if GetVehicleHealth(nearestCar) >= 5000 then
                         CallRemoteEvent(player, "MakeErrorNotification", _("dont_need_repair"))
-                    elseif GetVehicleHoodRatio(nearestCar) < 5 and GetVehicleModel(nearestCar) ~= 10 and GetVehicleModel(nearestCar) ~= 24 then
-                        CallRemoteEvent(player, "MakeErrorNotification", _("need_to_open_hood"))
                     else
+                        RemoveInventory(originInventory, itemName, amount)
                         CallRemoteEvent(player, "LockControlMove", true)
                         SetPlayerAnimation(player, "COMBINE")
-                        Delay(4000, function()
-                            RemoveInventory(originInventory, itemName, amount)
-                            SetVehicleHealth(nearestCar, 5000)
-                            for i = 1, 8 do
-                                SetVehicleDamage(nearestCar, i, 0)
-                            end
+                        SetPlayerBusy(player)
+                        CallRemoteEvent(player, "loadingbar:show", _("repairing"), REPAIR_KIT_TIME)-- LOADING BAR
+                        Delay(REPAIR_KIT_TIME * 1000, function()
+                            SetVehicleHealth(nearestCar, GetVehicleHealth(nearestCar) + REPAIR_KIT_HEALTH)   
+                            local percentOfDamage = (1 - (GetVehicleHealth(nearestCar) / 5000)) or 0.5
+                            if percentOfDamage < 0 then percentOfDamage = 0 end
+                            if percentOfDamage > 1 then percentOfDamage = 1 end
+                            for j = 1, 8 do
+                                SetVehicleDamage(nearestCar, j, percentOfDamage)                 
+                            end 
+                            if GetVehicleHealth(nearestCar) > 5000 then SetVehicleHealth(nearestCar, 5000) end   
                             CallRemoteEvent(player, "LockControlMove", false)
                             SetPlayerAnimation(player, "STOP")
+                            SetPlayerNotBusy(player)
+                            CallRemoteEvent(player, "MakeNotification", _("repair_kit_vehicle_repaired"), "linear-gradient(to right, #00b09b, #96c93d)")
                         end)
                     end
                 end
             end
             if itemName == "jerican" then
-                if GetPlayerState(player) >= 2 then
-                    CallRemoteEvent(player, "MakeSuccessNotification", _("cant_while_driving"))
-                else
-                    local nearestCar = GetNearestCar(player)
-                    if nearestCar ~= 0 then
-                        if VehicleData[nearestCar].fuel >= 100 then
-                            CallRemoteEvent(player, "MakeErrorNotification", _("car_full"))
-                        else
-                            CallRemoteEvent(player, "LockControlMove", true)
-                            SetPlayerAnimation(player, "COMBINE")
-                            Delay(4000, function()
-                                RemoveInventory(originInventory, itemName, amount)
-                                VehicleData[nearestCar].fuel = 100
-                                CallRemoteEvent(player, "MakeSuccessNotification", _("car_refuelled"))
-                                CallRemoteEvent(player, "LockControlMove", false)
-                                SetPlayerAnimation(player, "STOP")
-                            end)
-                        end
+                if GetPlayerVehicle(player) ~= 0 then
+                    CallRemoteEvent(player, "MakeErrorNotification", _("cant_while_driving"))
+                    return
+                end 
+                local nearestCar = GetNearestCar(player)
+                if not IsValidVehicle(nearestCar) then return end                
+                if nearestCar ~= 0 then
+                    if VehicleData[nearestCar].fuel >= 100 then
+                        CallRemoteEvent(player, "MakeErrorNotification", _("car_full"))
+                    else
+                        RemoveInventory(originInventory, itemName, amount)
+                        CallRemoteEvent(player, "LockControlMove", true)
+                        SetPlayerAnimation(player, "COMBINE")
+                        SetPlayerBusy(player)
+                        CallRemoteEvent(player, "loadingbar:show", _("refuel"), JERICAN_TIME)-- LOADING BAR
+                        Delay(JERICAN_TIME * 1000, function()                            
+                            VehicleData[nearestCar].fuel = VehicleData[nearestCar].fuel + JERICAN_FUEL_AMOUNT   
+                            if VehicleData[nearestCar].fuel > 100 then VehicleData[nearestCar].fuel = 100 end
+                            SetVehiclePropertyValue(nearestCar, "fuel", VehicleData[nearestCar].fuel, true)
+                            CallRemoteEvent(player, "LockControlMove", false)
+                            SetPlayerAnimation(player, "STOP")
+                            SetPlayerNotBusy(player)
+                            CallRemoteEvent(player, "MakeNotification", _("car_refuelled_for", JERICAN_FUEL_AMOUNT, 'L'), "linear-gradient(to right, #00b09b, #96c93d)")
+                        end)
                     end
                 end
             end
@@ -301,12 +603,31 @@ AddRemoteEvent("UseInventory", function(player, originInventory, itemName, amoun
     end
 end)
 
-function UseItem(player, originInventory, item, amount, animation)
+function UseItem(player, originInventory, item, amount, itemName, animation)
+	local x, y, z = GetPlayerLocation(player) -- // aqui
+	local itemToUse = '' -- // aqui
     local animation = animation or "DRINKING"
+	
+	 -- // aqui
+	if itemName == "water_bottle" then
+		itemToUse = CreateObject(1627, x, y, z)
+		SetObjectAttached(itemToUse, ATTACH_PLAYER, player, -9.0, 5.0, -10.0, 0.0, 0.0, 0.0, "hand_r")
+	elseif itemName == "donut" then -- // aqui - Banana
+		itemToUse = CreateObject(1622, x, y, z)
+		SetObjectAttached(itemToUse, ATTACH_PLAYER, player, -9.0, 5.0, -10.0, 0.0, 0.0, 0.0, "hand_r")
+	end
+	 -- // aqui end
+	 
     RemoveInventory(originInventory, item.name, amount)
     addPlayerHunger(player, item.hunger * amount)
     addPlayerThirst(player, item.thirst * amount)
     SetPlayerAnimation(player, animation)
+	
+	if itemToUse ~= '' then
+		Delay(2000, function() 
+			DestroyObject(itemToUse)
+		end)
+	end
 end
 
 AddRemoteEvent("TransferInventory", function(player, originInventory, item, amount, destinationInventory)

@@ -18,13 +18,23 @@ let translations = {
     signature: "Signature: ",
     hide: "Fermer",
     licenses: "Permis: "
+  },
+  br: {
+    idTitle: "EH-NOIS",
+    name: "Nome: ",
+    age: "Idade: ",
+    job: "Emprego: ",
+    issued: "Issued: ",
+    signature: "Assinatura: ",
+    hide: "Fechar",
+    licenses: "Licensas: "
   }
 }
 
 // ----------------
 
 // CONFIGS : 
-let language = 'fr'
+let language = 'br'
 let backgroundBlurredWhenReadingIdCard = true
 
 // ----------------

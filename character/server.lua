@@ -1,4 +1,5 @@
 shirtsModel = {
+	no_shirt = "",
     formal_shirt_1 = "/Game/CharacterModels/SkeletalMesh/Outfits/HZN_Outfit_Piece_FormalShirt_LPR",
     formal_shirt_2 = "/Game/CharacterModels/SkeletalMesh/Outfits/HZN_Outfit_Piece_FormalShirt2_LPR",
     simple_shirt = "/Game/CharacterModels/SkeletalMesh/Outfits/HZN_Outfit_Piece_Shirt_LPR",
@@ -14,6 +15,7 @@ pantsModel = {
 }
 
 shoesModel = {
+	no_shoes = "",
     normal_shoes = "/Game/CharacterModels/SkeletalMesh/Outfits/HZN_Outfit_Piece_NormalShoes_LPR",
     business_shoes = "/Game/CharacterModels/SkeletalMesh/Outfits/HZN_Outfit_Piece_BusinessShoes_LPR"
 }
@@ -26,15 +28,35 @@ hairsModel = {
     hairs_2 = "/Game/CharacterModels/SkeletalMesh/HZN_CH3D_Normal_Hair_02_LPR"
 }
 
+--hairsColor = {
+--    blond = { 250, 240, 190, 1 },
+--    light_blond = { 222, 190, 153, 1 },
+--    dark = { 36, 28, 17, 1 },
+--    brown = { 139, 69, 19, 1 },
+--    redhead = { 154, 51, 0, 1 },
+--    grey = { 169, 169, 169, 1 },
+--    light_grey = { 211, 211, 211, 1},
+--    black = { 9, 8, 6, 1 }
+--}
+
 hairsColor = {
-    blond = { 250, 240, 190, 1 },
-    light_blond = { 222, 190, 153, 1 },
-    dark = { 36, 28, 17, 1 },
-    brown = { 139, 69, 19, 1 },
-    redhead = { 154, 51, 0, 1 },
-    grey = { 169, 169, 169, 1 },
-    light_grey = { 211, 211, 211, 1},
-    black = { 9, 8, 6, 1 }
+	black = {0, 0, 0, 1},
+    blond = {255, 255, 0, 1},
+	silver = {192, 192, 192, 1},
+	gray = {128, 128, 128, 1},	
+	orange = {255, 140, 0, 1},
+	red = {255, 0, 0, 1},
+	gingerhair = {217, 62, 20, 1},
+	blueviolet = {138, 43, 226, 1},    
+    lime = {0, 255, 0, 1},
+	green = {0, 128, 0, 1},
+    blue = {0, 0, 255, 1},
+	deepskyblue = {0, 191, 255, 1},
+	aqua = {0, 255, 255, 1},
+	navyblue = {0, 0, 128, 1},
+    brown = {139, 69, 19, 1},
+	deeppink = {255, 20, 147, 1},
+	pink = {255, 192, 203, 1}
 }
 
 skinColor = {
@@ -49,7 +71,8 @@ skinColor = {
 defaultCharacter = {
     -- faces = 'sdfadf1',
     hair = 'hairs_business',
-    haircolors = 'dark',
+    --haircolors = 'dark',
+	haircolors = 'black',
     skins = 'skin_1',
     tops = 'knitted_shirt_2',
     -- jackets = 'sdfadf2',

@@ -49,6 +49,7 @@ function OnPackageStart()
     
 	ShowHealthHUD(false)
     ShowWeaponHUD(false)
+	showRPHud()
 end
 AddEvent("OnPackageStart", OnPackageStart)
 
@@ -65,12 +66,16 @@ function updateHud()
     if GetPlayerVehicle() ~= 0 then
         local vehiclespeed = math.floor(GetVehicleForwardSpeed(GetPlayerVehicle()))
         local vehiclehealth = math.floor(GetVehicleHealth(GetPlayerVehicle()))
-        local vehiclefuel = GetVehiclePropertyValue(GetPlayerVehicle(), "fuel")
+        local vehiclefuel = GetVehiclePropertyValue(GetPlayerVehicle(), "fuel")		
+		local vehiclegear = GetVehicleGear(GetPlayerVehicle()) -- // aqui
         vehiclefuel = vehiclefuel or 100
         SetWebVisibility(VehicleHud, WEB_VISIBLE)
         ExecuteWebJS(VehicleHud, "SetVehicleFuel("..vehiclefuel..");")
         ExecuteWebJS(VehicleHud, "SetVehicleSpeed("..vehiclespeed..");")
         ExecuteWebJS(VehicleHud, "SetVehicleHealth("..vehiclehealth..");")
+		if vehiclegear ~= 0 then
+			ExecuteWebJS(VehicleHud, "SetVehicleGear("..vehiclegear..","..vehiclespeed..");")
+		end
     else
         SetWebVisibility(VehicleHud, WEB_HIDDEN)
     end

@@ -4,9 +4,9 @@ local mapGui = nil
 local miniMapGui = nil
 local devMode = false
 local mapUILoaded = false
-local minimapUILoaded = false
+local minimapUILoaded
 
-function DisplayMinimap()
+local function OnPackageStart()
 	local screenX, screenY = GetScreenSize()
 	mapGui = CreateWebUI(0, 0, 0, 0, 0, 60)	
 	
@@ -15,14 +15,14 @@ function DisplayMinimap()
 	SetWebAlignment(mapGui, 0, 0)
 	SetWebAnchors(mapGui, 0.1, 0.1, 0.9, 0.9) --Set up my web ui to take up the center 80% of the screen
 
-	SetWebVisibility(mapGui, WEB_HIDDEN)  
-
-	local minimapWidth = 300
-	local minimapHeight = 300
-	local minX = 0 + 30/screenX
-	local maxX = 0 + 30/screenX + minimapWidth/screenX
-	local minY = 1 - minimapHeight/screenY - 30/screenY
-	local maxY = 1 - 30/screenY
+    SetWebVisibility(mapGui, WEB_HIDDEN)
+    
+    local minimapWidth = 300
+    local minimapHeight = 300
+    local minX = 0 + 30/screenX
+    local maxX = 0 + 30/screenX + minimapWidth/screenX
+    local minY = 1 - minimapHeight/screenY - 30/screenY
+    local maxY = 1 - 30/screenY
 	miniMapGui = CreateWebUI(0, 0, 0, 0, 0, 144)
 	LoadWebFile(miniMapGui, "http://asset/" .. GetPackageName() .. "/hud/pinmap/client/web/minimap.html")
 
@@ -30,8 +30,8 @@ function DisplayMinimap()
 	SetWebAnchors(miniMapGui, minX, minY, maxX, maxY) --Set up my web ui to take up the center 80% of the screen
 
 	SetWebVisibility(miniMapGui, WEB_HITINVISIBLE)
-	minimapUILoaded = true
 end
+AddEvent("OnPackageStart", OnPackageStart)
 
 function InitializeMapValues() --This will send the width/height of the map which will be used by the WebUI to make sure user does not drag map off screen as well as send the legend info
 	local screenX, screenY = GetScreenSize()
@@ -45,22 +45,24 @@ function InitializeMapValues() --This will send the width/height of the map whic
 	end
 	
     mapUILoaded = true
-    CallRemoteEvent("PinmapRequestLegend")
+    if (minimapUILoaded) then
+        CallRemoteEvent("PinmapRequestLegend")
+    end
 end
 AddEvent("OnMapUILoaded", InitializeMapValues) --This event is called by the map.js after the page is loaded. If we try to execute the web js before the page is loaded, it's invalid behavior.
 
 function InitializeMinimapValues() --This will send the width/height of the map which will be used by the WebUI to make sure user does not drag map off screen as well as send the legend info
     minimapUILoaded = true
-    --if (mapUILoaded) then
-    --    CallRemoteEvent("PinmapRequestLegend")
-    --end
+    if (mapUILoaded) then
+        CallRemoteEvent("PinmapRequestLegend")
+    end
 end
 AddEvent("OnMinimapUILoaded", InitializeMinimapValues) --This event is called by the map.js after the page is loaded. If we try to execute the web js before the page is loaded, it's invalid behavior.
 
 
-function PinmapRegisterLegendKey(id, displayText, iconPath)
-    ExecuteWebJS(mapGui, "RegisterLegendKey('" .. id .. "', '" .. i18n(displayText) .. "', '" .. iconPath .. "');")
-	ExecuteWebJS(miniMapGui, "RegisterLegendKey('" .. id .. "', '" .. i18n(displayText) .. "', '" .. iconPath .. "');")	
+function PinmapRegisterLegendKey(id, displayText, iconPath, iconclass)
+    ExecuteWebJS(mapGui, "RegisterLegendKey('" .. id .. "', '" .. i18n(displayText) .. "', '" .. iconPath .. "', '" .. iconclass .. "');")
+	ExecuteWebJS(miniMapGui, "RegisterLegendKey('" .. id .. "', '" .. i18n(displayText) .. "', '" .. iconPath .. "', '" .. iconclass .. "');")
 	ExecuteWebJS(mapGui, "UpdateText('" .. i18n("legend") .. "', '" .. i18n("set_destination") .. "', '" .. i18n("clear_destination") .. "');")
 end
 AddRemoteEvent("PinmapRegisterLegendKey", PinmapRegisterLegendKey)
@@ -180,16 +182,6 @@ function OnKeyPress(key)
 end
 AddEvent("OnKeyPress", OnKeyPress)
 
-AddEvent("OnHideMainMenu", function()
-	if isMapOpen then
-		Delay(1, function()
-			SetInputMode(INPUT_GAMEANDUI)
-			ShowMouseCursor(true)
-		end)
-	end
-end)
-
-
 function OnKeyRelease(key)
     if (key == MAP_ZOOMIN_KEY or key == MAP_ZOOMOUT_KEY) then
         if (zoomTimer ~= nil) then
@@ -231,25 +223,23 @@ end
 AddEvent("ClearMapDestination", ClearMapDestination)
 
 function UpdatePositionOnMap()
-	if (minimapUILoaded) then
-		if (isMapOpen == true) then
-			local x, y, z = GetPlayerLocation()
-			heading = GetPlayerHeading() + 90
-			if (heading < 0) then
-				heading = heading + 360
-			end
-			jsString = "UpdatePlayerPosition(" .. x .. "," .. y .. "," .. z .. "," .. heading .. ");"
-			ExecuteWebJS(mapGui, jsString)
-		else
-			local x, y, z = GetPlayerLocation()
-			_, heading = GetCameraRotation()
-			heading = heading + 90
-			if (heading < 0) then
-				heading = heading + 360
-			end
-			jsString = "UpdatePlayerPosition(" .. x .. "," .. y .. "," .. z .. "," .. heading .. ");"
-			ExecuteWebJS(miniMapGui, jsString)
+	if (isMapOpen == true) then
+		local x, y, z = GetPlayerLocation()
+		heading = GetPlayerHeading() + 90
+		if (heading < 0) then
+			heading = heading + 360
 		end
+		jsString = "UpdatePlayerPosition(" .. x .. "," .. y .. "," .. z .. "," .. heading .. ");"
+        ExecuteWebJS(mapGui, jsString)
+    else
+        local x, y, z = GetPlayerLocation()
+        _, heading = GetCameraRotation()
+        heading = heading + 90
+		if (heading < 0) then
+			heading = heading + 360
+		end
+		jsString = "UpdatePlayerPosition(" .. x .. "," .. y .. "," .. z .. "," .. heading .. ");"
+        ExecuteWebJS(miniMapGui, jsString)
 	end
 end
 CreateTimer(UpdatePositionOnMap, 10)

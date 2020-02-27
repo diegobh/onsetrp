@@ -23,8 +23,20 @@ speedGauge.animationSpeed = 10; // set animation speed (32 is default value)
 function SetVehicleSpeed(speed) {
     speed = Math.abs(speed)
     speedGauge.set(speed);
-    document.getElementById('speed-display').innerHTML = speed
+    document.getElementById('speed-display').innerHTML = speed;
 }
+
+// aqui
+function SetVehicleGear(gear, speed) {
+	if (speed == "0") {
+		document.getElementById('gear').innerHTML = "N";		
+	}
+	else {
+		document.getElementById('gear').innerHTML = gear.toString().replace("-1", "R");
+	}
+	
+}
+// aqui end
 
 var fuelOpts = {
     angle: 0.2, // The span of the gauge arc

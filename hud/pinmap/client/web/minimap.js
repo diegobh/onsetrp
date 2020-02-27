@@ -195,13 +195,15 @@ function GetLabelWidth(label)
     return formattedWidth;
 }
 
-function RegisterLegendKey(id, text, iconpath) //This should be called by main.lua via ExecuteJS for setting up a new legend key
+//function RegisterLegendKey(id, text, iconpath) //This should be called by main.lua via ExecuteJS for setting up a new legend key // aqui
+function RegisterLegendKey(id, text, iconpath, iconclass) //This should be called by main.lua via ExecuteJS for setting up a new legend key
 {
     var key = [];
     key.id = id;
     key.text = text;
     key.iconpath = iconpath;
     key.blips = [];
+	key.iconclass = iconclass;
     legendKeys.push(key);
 }
 
@@ -217,9 +219,12 @@ function RegisterBlip(id, worldX, worldY) //This should be called by main.lua vi
     });
     if (key != null)
     {
-        var blipimg = document.createElement('img');
-        blipimg.src = key.iconpath;
-        blipimg.className = "blip";
+        //var blipimg = document.createElement('img'); // aqui
+		var blipimg = document.createElement('img');
+        //blipimg.src = key.iconpath;
+		blipimg.src = "http://asset/onsetrp/hud/pinmap/client/web/icons/transparent.png";
+        //blipimg.className = "blip";
+		blipimg.className = "sprite " + key.iconclass + " blip";
         blipimg.draggable = false;
         blipimg.worldX = worldX;
         blipimg.worldY = worldY;

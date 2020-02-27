@@ -27,7 +27,7 @@ function OnKeyPress(key)
             SetInputMode(INPUT_GAME)
             SetWebVisibility(shortcutsUI, WEB_HIDDEN)
 		end
-	end
+	end	
 end
 AddEvent("OnKeyPress", OnKeyPress)
 

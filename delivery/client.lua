@@ -70,3 +70,15 @@ function GetNearestDelivery()
 
 	return 0
 end
+
+-- // aqui
+AddRemoteEvent("ClientCreateWaypointDelivery", function(name, x, y, z, reward)
+    if currentWaypoint ~= nil then
+        DestroyWaypoint(currentWaypoint)
+    end
+    currentWaypoint = CreateWaypoint(tonumber(x), tonumber(y), tonumber(z), tostring(name))    
+end)
+
+AddRemoteEvent("ClientDestroyCurrentWaypoint", function()
+    DestroyWaypoint(currentWaypoint)
+end)

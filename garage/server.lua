@@ -131,7 +131,11 @@ AddEvent("OnPlayerPickupHit", OnPlayerPickupHit)
 function MoveVehicleToGarage(vehicle, player)
     if vehicle then
         if VehicleData[vehicle].garageid ~= 0 then
-            mariadb_async_query(sql, mariadb_prepare(sql, "UPDATE `player_garage` SET `garage`=1 WHERE `id` = ?;", tostring(VehicleData[vehicle].garageid)))
+            VehicleData[vehicle].health = GetVehicleHealth(vehicle)            
+            mariadb_async_query(sql, mariadb_prepare(sql, "UPDATE `player_garage` SET `garage`=1, fuel = ?, health = ? WHERE `id` = ?;", 
+            VehicleData[vehicle].fuel,
+            VehicleData[vehicle].health,
+            tostring(VehicleData[vehicle].garageid)))
         end
         DestroyVehicle(vehicle)
         DestroyVehicleData(vehicle)
@@ -140,8 +144,8 @@ function MoveVehicleToGarage(vehicle, player)
 end
 
 function spawnCarServer(player, id)
-    local query = mariadb_prepare(sql, "SELECT * FROM player_garage WHERE id = '?';",
-    tostring(id))
+    local query = mariadb_prepare(sql, "SELECT * FROM player_garage WHERE id = ?;",
+    tonumber(id))
     mariadb_async_query(sql, query, spawnCarServerLoaded, player)
 end
 AddRemoteEvent("spawnCarServer", spawnCarServer)
@@ -153,14 +157,13 @@ function spawnCarServerLoaded(player)
         local id = math.tointeger(result["id"])
         local modelid = math.tointeger(result["modelid"])
         local fuel = math.tointeger(result["fuel"])
+        local health = math.tointeger(result["health"])
+        if health < 100 then health = 100 end
         local color = tostring(result["color"])
 		local plate = tostring(result["plate"])
-        local inventory = json_decode(result["inventory"])
+        local inventory = json_decode(result["inventory"] or "{}") 
         local name = _("vehicle_"..modelid)
 
-        local query = mariadb_prepare(sql, "UPDATE `player_garage` SET `garage`=0 WHERE `id` = ?;",
-            tostring(id)
-        )
 
         local x, y, z = GetPlayerLocation(player)
 
@@ -178,13 +181,21 @@ function spawnCarServerLoaded(player)
                     end
                 end
                 if isSpawnable then
-                    local vehicle = CreateVehicle(modelid, v.spawn[1], v.spawn[2], v.spawn[3], v.spawn[4])					
+                    local vehicle = CreateVehicle(modelid, v.spawn[1], v.spawn[2], v.spawn[3], v.spawn[4])
+                    SetVehicleLicensePlate(vehicle, licensePlate)
                     SetVehicleRespawnParams(vehicle, false)
 					SetVehicleLicensePlate(vehicle, plate)
                     SetVehicleColor(vehicle, "0x"..color)					
                     SetVehiclePropertyValue(vehicle, "locked", true, true)
                     SetVehiclePropertyValue(vehicle, "fuel", true, fuel)
-                    CreateVehicleData(player, vehicle, modelid, fuel)
+                    SetVehicleHealth(vehicle, health)                    
+                    CreateVehicleData(player, vehicle, modelid, fuel, health, licensePlate)
+                    local percentOfDamage = (1 - (health / 5000)) or 0
+                    if percentOfDamage < 0 then percentOfDamage = 0 end
+                    if percentOfDamage > 1 then percentOfDamage = 1 end
+                    for j = 1, 8 do
+                        SetVehicleDamage(vehicle, j, percentOfDamage)                 
+                    end
                     VehicleData[vehicle].garageid = id
                     if inventory == nil then
                         inventory = {}
@@ -192,6 +203,9 @@ function spawnCarServerLoaded(player)
                     VehicleData[vehicle].inventory = inventory
                     mariadb_async_query(sql, query)
                     CallRemoteEvent(player, "closeGarageDealer")
+                    if health <= 100 then
+                        CallRemoteEvent(player, "MakeNotification", _("vehicle_hardly_damaged"), "linear-gradient(to right, #00b09b, #96c93d)", 10000)
+                    end
                     return CallRemoteEvent(player, "MakeNotification", _("spawn_vehicle_success", tostring(name)), "linear-gradient(to right, #00b09b, #96c93d)")
                 else
                     return CallRemoteEvent(player, "MakeNotification", _("cannot_spawn_vehicle"), "linear-gradient(to right, #ff5f6d, #ffc371)")
@@ -201,26 +215,24 @@ function spawnCarServerLoaded(player)
 	end
 end
 
--- function sellCarServer(player, id)
---     local query = mariadb_prepare(sql, "SELECT * FROM player_garage WHERE id = ?;",
---     tostring(id))
+function sellCarServer(player, id)
+    local query = mariadb_prepare(sql, "SELECT * FROM player_garage WHERE id = ?;",
+    tostring(id))
 
---     mariadb_async_query(sql, query, sellCarServerLoaded, player)
--- end
--- AddRemoteEvent("sellCarServer", sellCarServer)
+    mariadb_async_query(sql, query, sellCarServerLoaded, player)
+end
+AddRemoteEvent("sellCarServer", sellCarServer)
 
--- function sellCarServerLoaded(player)
---     for i=1,mariadb_get_row_count() do
---         local result = mariadb_get_assoc(i)
-
---         local id = math.tointeger(result["id"])
---         local modelid = math.tointeger(result["modelid"])
---         local name = _("vehicle_"..modelid)
---         local price = math.ceil(result["price"] * 0.25)
-
---         local query = mariadb_prepare(sql, "DELETE FROM `player_garage` WHERE `id` = ?;", tostring(id))
---         mariadb_async_query(sql, query)
---         AddPlayerCash(player, price)
---         return CallRemoteEvent(player, "MakeNotification", _("sell_vehicle_success", tostring(name), price, _("currency")), "linear-gradient(to right, #00b09b, #96c93d)")
--- 	end
--- end
+function sellCarServerLoaded(player)
+    for i=1,mariadb_get_row_count() do
+        local result = mariadb_get_assoc(i)
+        local id = math.tointeger(result["id"])
+        local modelid = math.tointeger(result["modelid"])
+        local name = _("vehicle_"..modelid)
+        local price = math.ceil(result["price"] * 0.25)
+        local query = mariadb_prepare(sql, "DELETE FROM `player_garage` WHERE `id` = ?;", tostring(id))
+        mariadb_async_query(sql, query)
+        AddPlayerCash(player, price)
+        return CallRemoteEvent(player, "MakeNotification", _("sell_vehicle_success", tostring(name), price, _("currency")), "linear-gradient(to right, #00b09b, #96c93d)")
+ 	end
+end

@@ -11,7 +11,7 @@ function ToggleChat()
 end
 
 AddEvent("OnPackageStart", function()
-    ToggleChat()
+    --ToggleChat()
 end)
 
 AddEvent("OnKeyPress", function(key)

@@ -120,6 +120,12 @@ AddRemoteEvent("ClientChangeClothing", function(player, part, piece, r, g, b, a)
     end
 end)
 
+AddRemoteEvent("ClientChangeBody", function(player, value)
+	SkeletalMeshComponent = GetPlayerSkeletalMeshComponent(player, "Body")
+	SkeletalMeshComponent:SetSkeletalMesh(USkeletalMesh.LoadFromAsset(value))
+	SkeletalMeshComponent:SetFloatParameterOnMaterials("PupilScale", 1.5)
+end)
+
 BodyMaterial = {
     noClothes = "/Game/CharacterModels/Materials/HZN_Materials/M_HZN_Body_NoClothes",
     noLegs = "/Game/CharacterModels/Materials/HZN_Materials/M_HZN_Body_NoLegs",

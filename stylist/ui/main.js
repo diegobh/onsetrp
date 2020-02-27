@@ -91,7 +91,7 @@ function displayStylist() {
 
     let saveBtn = document.createElement('div')
     saveBtn.classList.add('btn')
-    saveBtn.innerText = "Sauvegarder"
+    saveBtn.innerText = "Continuar" // aqui Default: Sauvegarder
 
     document.getElementById('stylist-container').append(saveBtn)
 
@@ -103,7 +103,7 @@ function displayStylist() {
         let cancelBtn = document.createElement('div')
         cancelBtn.classList.add('btn')
         cancelBtn.classList.add('btn-cancel')
-        cancelBtn.innerText = "Annuler"
+        cancelBtn.innerText = "Cancelar"
     
         document.getElementById('stylist-container').append(cancelBtn)
     } 

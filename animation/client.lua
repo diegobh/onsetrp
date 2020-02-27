@@ -12,6 +12,23 @@ function OnPackageStart()
 end
 AddEvent("OnPackageStart", OnPackageStart)
 
+-- HANDS UP // aqui
+AddEvent ("OnKeyPress", function(key)
+	local cuffed = GetPlayerPropertyValue(GetPlayerId(), "cuffed") or false
+	if key == ANIMATION_HANDSUP_KEY and not IsPlayerInVehicle(GetPlayerId()) and not GetPlayerBusy() and not cuffed then
+		if not IsPlayerPlayingAnimation(GetPlayerId()) then
+			if IsCtrlPressed() then
+				CallRemoteEvent("Server_OnPlayerAnimation", "HANDSHEAD_KNEEL")
+			else
+				CallRemoteEvent("Server_OnPlayerAnimation", "HANDSHEAD_STAND")
+			end
+		else
+			CallRemoteEvent("Server_OnPlayerAnimation", "STOP")
+		end
+	end
+end)
+-- FIM HANDSUP
+
 AddEvent("OnKeyPress", function(key)
 	local cuffed = GetPlayerPropertyValue(GetPlayerId(), "cuffed") or false
 	if key == ANIMATION_MENU_KEY and not IsPlayerInVehicle(GetPlayerId()) and not GetPlayerBusy() and not cuffed then

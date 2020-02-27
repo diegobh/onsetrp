@@ -101,12 +101,12 @@ AddRemoteEvent("DropGun", function(player, mag, bool)
             		objet = model + 1387
         	end
         	Delay(1000, function()
-			droppedgun = CreateObject(objet, x, y, z - 95, 90, h -90)
+				droppedgun = CreateObject(objet, x, y, z - 95, 90, h -90)
 		    	SetObjectPropertyValue(droppedgun, "isgun", true, true)
 		    	SetObjectPropertyValue(droppedgun, "collision", false, true)
 		    	SetObjectPropertyValue(droppedgun, "model", model, true)
-            		SetObjectPropertyValue(droppedgun, "ammo", ammo, true)
-            		SetObjectPropertyValue(droppedgun, "mag", mag, true)
+            	SetObjectPropertyValue(droppedgun, "ammo", ammo, true)
+            	SetObjectPropertyValue(droppedgun, "mag", mag, true)
         	end)
     	else
         	return CallRemoteEvent(player, "MakeNotification", _("nothing_todrop"), "linear-gradient(to right, #ff5f6d, #ffc371)")

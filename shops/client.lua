@@ -1,5 +1,6 @@
 local Dialog = ImportPackage("dialogui")
-Dialog.setGlobalTheme("onsetrp")
+--Dialog.setGlobalTheme("onsetrp")
+Dialog.setGlobalTheme("default-dark")
  
 local _ = function(k,...) return ImportPackage("i18n").t(GetPackageName(),k,...) end
 local shopUI

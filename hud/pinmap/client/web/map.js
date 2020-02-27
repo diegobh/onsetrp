@@ -333,16 +333,28 @@ function GetLabelWidth(label) {
     return formattedWidth;
 }
 
-function RegisterLegendKey(id, text, iconpath) {
-    //This should be called by main.lua via ExecuteJS for setting up a new legend key
+//function RegisterLegendKey(id, text, iconpath) { // aqui
+function RegisterLegendKey(id, text, iconpath, iconclass) {
+//This should be called by main.lua via ExecuteJS for setting up a new legend key
     var key = [];
     key.id = id;
     key.text = text;
     key.iconpath = iconpath;
     key.blips = [];
+	key.iconclass = iconclass; // aqui adicionei isso
     legendKeys.push(key);
     var legendKeyDiv = document.getElementById("legend-key");
-
+	
+	// aqui
+	maxHeightDiv = windowHeight * 0.85;
+	legendKeyDiv.setAttribute("style", "overflow-y: auto; max-height: " + maxHeightDiv + "px;");
+	// aqui FIM
+	
+	/* // aqui */
+	var firstDiv = document.createElement("div"); //create div for legend key
+	//firstDiv.classList.add("firstDiv");
+	/* //  aqui end */
+	
     var keyDiv = document.createElement("div"); //create div for legend key
     keyDiv.classList.add("legend-key-child");
     keyDiv.dataset.checked = true;
@@ -355,11 +367,20 @@ function RegisterLegendKey(id, text, iconpath) {
 
     var keyName = document.createElement("div");
     keyName.classList.add("name");
+	/* // aqui */
+	keyName.classList.add("insideDivs");
+	/* // aqui FIM */
 
-    var img = document.createElement("img"); //create img icon for legend key
-    img.src = iconpath;
-    img.className = "legend-img";
+    //var img = document.createElement("img"); //create img icon for legend key
+	var img = document.createElement("div");
+    //img.src = iconpath; // aqui
+	img.src = "http://asset/onsetrp/hud/pinmap/client/web/icons/transparent.png";
+    //img.className = "legend-img";
+	img.className = "legend-sprite " + iconclass + " legend-img";
     img.draggable = false;
+	/* // aqui */
+	img.classList.add("insideDivs");
+	/* // aqui FIM */
 
     var label = document.createElement("label"); //create label for legend key text
     label.htmlFor = checkbox.id;
@@ -380,7 +401,8 @@ function RegisterLegendKey(id, text, iconpath) {
         legendDiv.style.visibility = "visible";
         document.getElementById("legend-background").style.visibility = "visible";
     }
-
+	
+	
     keyName.appendChild(img);
     keyName.appendChild(label);
 
@@ -389,6 +411,14 @@ function RegisterLegendKey(id, text, iconpath) {
     keyDiv.append(clearDiv);
 
     legendKeyDiv.appendChild(keyDiv);
+	
+	
+	/* // aqui */
+	//keyDiv.appendChild(keyName);
+	//keyDiv.appendChild(img);
+	//legendKeyDiv.appendChild(keyDiv);
+	/* // aqui FIM */
+	
     document.getElementById("legend-background").style.height =
         document.getElementById("legend").offsetHeight + "px";
     var a = checkbox.style.width;
@@ -406,9 +436,11 @@ function RegisterBlip(id, worldX, worldY) {
         }
     });
     if (key != null) {
-        var blipimg = document.createElement("img");
-        blipimg.src = key.iconpath;
-        blipimg.className = "blip";
+        //var blipimg = document.createElement("img"); //aqui
+		var blipimg = document.createElement("img");
+        //blipimg.src = key.iconpath;
+		blipimg.src = "http://asset/onsetrp/hud/pinmap/client/web/icons/transparent.png";
+        blipimg.className = "sprite " + key.iconclass + " blip";
         blipimg.draggable = false;
         blipimg.worldX = worldX;
         blipimg.worldY = worldY;

@@ -44,6 +44,10 @@ local function OnPackageStart()
             if (newKey.iconPath == nil or newKey.iconPath == '') then
                 return PinLog("Critical Error! Could not parse [" .. keyName .. "] - \"iconPath\" field! Config.ini not properly configured!")
             end
+			newKey.iconclass = ini_read(ini, keyName, "iconclass")
+            if (newKey.iconclass == nil or newKey.iconclass == '') then
+                return PinLog("Critical Error! Could not parse [" .. keyName .. "] - \"iconclass\" field! Config.ini not properly configured!")
+            end
             newKey.displayText = ini_read(ini, keyName, "displayText")
             if (newKey.displayText == nil or newKey.displayText == '') then
                 return PinLog("Critical Error! Could not parse [" .. keyName .. "] - \"displayText\" field! Config.ini not properly configured!")
@@ -85,7 +89,7 @@ AddEvent("OnPlayerJoin", OnPlayerJoin)
 local function PinmapRequestLegend(player)
     local kc = 0
     for i = 1, #legendKeys do
-        CallRemoteEvent(player, "PinmapRegisterLegendKey", legendKeys[i].id,  legendKeys[i].displayText, legendKeys[i].iconPath)
+        CallRemoteEvent(player, "PinmapRegisterLegendKey", legendKeys[i].id,  legendKeys[i].displayText, legendKeys[i].iconPath, legendKeys[i].iconclass)
         for j, blip in ipairs(legendKeys[i].blips) do
             CallRemoteEvent(player, "PinmapRegisterBlip", legendKeys[i].id, blip.x, blip.y)
         end
