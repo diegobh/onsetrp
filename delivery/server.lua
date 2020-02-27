@@ -94,18 +94,16 @@ AddRemoteEvent("StartStopDelivery", function(player)
             end
             if isSpawnable then
                 
-                if useBank then
-                    PlayerData[player].bank_balance = PlayerData[player].bank_balance - LOCATION_PRICE
-                elseif useCash then
+                if useCash then
                     RemovePlayerCash(player, LOCATION_PRICE)
                 else
                     CallRemoteEvent(player, "MakeErrorNotification", _("delivery_not_enough_location_cash", LOCATION_PRICE))
                     return
                 end
                 
-                local vehicle = CreateVehicle(24, deliveryNpc[nearestDelivery].spawn[1], deliveryNpc[nearestDelivery].spawn[2], deliveryNpc[nearestDelivery].spawn[3], deliveryNpc[nearestDelivery].spawn[4])
+                local vehicle = CreateVehicle(22, deliveryNpc[nearestDelivery].spawn[1], deliveryNpc[nearestDelivery].spawn[2], deliveryNpc[nearestDelivery].spawn[3], deliveryNpc[nearestDelivery].spawn[4])
                 PlayerData[player].job_vehicle = vehicle
-                CreateVehicleData(player, vehicle, 24)
+                CreateVehicleData(player, vehicle, 22)
                 SetVehicleRespawnParams(vehicle, false)
                 SetVehiclePropertyValue(vehicle, "locked", true, true)
                 PlayerData[player].job = "delivery"

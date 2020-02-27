@@ -192,30 +192,19 @@ end
 AddEvent("OnKeyRelease", OnKeyRelease)
 
 local destinationWP = nil
-function UpdateMapDestination(worldX, worldY, wp)
-	if wp == nil then wp = 1 end
-	if wp == 1 then
-		_, _, _, _, worldZ = LineTrace(worldX, worldY, 10000, worldX, worldY, 0)
-		if (destinationWP ~= nil) then --If we have an existing waypoint, destroy it before creating this new one
-			DestroyWaypoint(destinationWP)
-		end
-		destinationWP = CreateWaypoint(worldX, worldY, worldZ, "Destination")
+function UpdateMapDestination(worldX, worldY)
+	_, _, _, _, worldZ = LineTrace(worldX, worldY, 10000, worldX, worldY, 0)
+	if (destinationWP ~= nil) then --If we have an existing waypoint, destroy it before creating this new one
+		DestroyWaypoint(destinationWP)
 	end
+    destinationWP = CreateWaypoint(worldX, worldY, worldZ, "Destination")
     ExecuteWebJS(miniMapGui, "UpdateDestination(" .. worldX .. "," .. worldY .. ");")
 end
 AddEvent("UpdateMapDestination", UpdateMapDestination)
 
-AddEvent("UpdateCalloutDestination", function(x,y)
-	ExecuteWebJS(mapGui, "MenuOptionClicked('SetCalloutDestination', "..tonumber(x)..","..tonumber(y)..")")
-end)
-
-AddEvent("ClearCalloutDestination", function(x,y)
-	ExecuteWebJS(mapGui, "MenuOptionClicked('ClearDestination')")
-end)
-
 function ClearMapDestination()
-	ExecuteWebJS(miniMapGui, "ClearDestination();")
-    if (destinationWP ~= nil) then        
+    if (destinationWP ~= nil) then
+        ExecuteWebJS(miniMapGui, "ClearDestination();")
 		DestroyWaypoint(destinationWP)
 		destinationWP = nil
 	end

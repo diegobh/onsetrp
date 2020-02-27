@@ -38,8 +38,6 @@ body
     position: relative;
     vertical-align: top;
     filter: none;
-	border: 0;
-	transform: scale(.25);
 }
 
 .oceanBackgroundColor div
