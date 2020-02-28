@@ -136,6 +136,7 @@ end
 AddEvent("OnPlayerPickupHit", OnPlayerPickupHit)
 
 function spawnCarServer(player, id)
+    if tonumber(id) == nil then return end
     local query = mariadb_prepare(sql, "SELECT * FROM player_garage WHERE id = ?;",
     tostring(id))
     mariadb_async_query(sql, query, spawnCarServerLoaded, player)
