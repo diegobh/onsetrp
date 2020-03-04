@@ -24,7 +24,7 @@ AddEvent("OnPlayerInteractDoor", function(player, door)
 				if IsDoorOpen(door) then
 					SetDoorOpen(door, false)
 				else
-					SetDoorOpen(door, true)
+					--SetDoorOpen(door, true)
 				end
 			end
 		end
