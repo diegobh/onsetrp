@@ -15,17 +15,9 @@ AddEvent("OnPlayerInteractDoor", function(player, door)
 	for k, v in pairs(modelsPrison) do
 		if GetDoorModel(door) == v.model then
 			if PlayerData[player].job == 'police' then
-				if IsDoorOpen(door) then
-					SetDoorOpen(door, true)
-				else
-					SetDoorOpen(door, false)
-				end
+				SetDoorOpen(door, IsDoorOpen(door))
 			else
-				if IsDoorOpen(door) then
-					SetDoorOpen(door, false)
-				else
-					SetDoorOpen(door, true)
-				end
+				SetDoorOpen(door, not IsDoorOpen(door))
 			end
 		end
 	end
